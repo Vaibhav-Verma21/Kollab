@@ -66,7 +66,7 @@
         <div class="p-4 border-b-2 border-black bg-blue-600 text-white flex justify-between items-center">
             <h2 class="font-bold uppercase tracking-tighter text-lg">My Notes</h2>
             @auth
-                <span class="font-mono text-[10px] bg-black px-2 py-1">MongoDB Connected</span>
+                <span class="font-mono text-[10px] bg-black px-2 py-1">Saving...</span>
             @else
                 <span class="font-mono text-[10px] bg-red-600 px-2 py-1">Offline</span>
             @endauth

@@ -51,6 +51,16 @@ class CourseController extends Controller
         return view('catalog', compact('courses', 'search', 'domain', 'level', 'domains', 'levels'));
     }
 
+    public function myEnrolled()
+    {
+        $enrolledIds = auth()->user()->enrolled_courses ?? [];
+        $courses     = count($enrolledIds)
+            ? Course::whereIn('id', $enrolledIds)->get()
+            : collect();
+
+        return view('my-courses', compact('courses'));
+    }
+
     public function show($slug)
     {
         $course = Course::where('slug', $slug)->firstOrFail();

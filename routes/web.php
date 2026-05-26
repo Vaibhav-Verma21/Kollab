@@ -18,6 +18,10 @@ Route::get('/dashboard', function () {
 
 Route::get('/catalog', [CourseController::class, 'index'])->name('catalog');
 
+Route::get('/my-courses', [CourseController::class, 'myEnrolled'])
+    ->middleware('auth')
+    ->name('my-courses');
+
 Route::middleware('auth')->group(function () {
     Route::get('/workspace', [WorkspaceController::class, 'index'])->name('workspace');
     Route::post('/workspace/sync', [WorkspaceController::class, 'sync'])->name('workspace.sync');
