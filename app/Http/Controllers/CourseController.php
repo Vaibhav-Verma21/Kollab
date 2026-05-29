@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Course;
 use App\Models\Note;
+use App\Models\Assignment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -75,6 +76,8 @@ class CourseController extends Controller
             }
         }
 
-        return view('course', compact('course', 'noteContent'));
+        $assignments = Assignment::where('course_id', $course->id)->get();
+
+        return view('course', compact('course', 'noteContent', 'assignments'));
     }
 }

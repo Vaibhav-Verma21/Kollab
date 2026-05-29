@@ -49,7 +49,10 @@
                     <a href="{{ route('dashboard') }}" class="font-mono text-xs uppercase font-bold hover:bg-black hover:text-white px-3 py-1.5 transition-colors border-2 border-transparent hover:border-black">Dashboard</a>
                     <a href="{{ route('workspace') }}" class="font-mono text-xs uppercase font-bold hover:bg-black hover:text-white px-3 py-1.5 transition-colors border-2 border-transparent hover:border-black">Workspace</a>
                     <a href="{{ route('forum') }}" class="font-mono text-xs uppercase font-bold hover:bg-black hover:text-white px-3 py-1.5 transition-colors border-2 border-transparent hover:border-black">Forum</a>
-                    <a href="{{ route('assignment') }}" class="font-mono text-xs uppercase font-bold hover:bg-black hover:text-white px-3 py-1.5 transition-colors border-2 border-transparent hover:border-black">Assignments</a>
+                    <a href="{{ route('peer_reviews.index') }}" class="font-mono text-xs uppercase font-bold hover:bg-black hover:text-white px-3 py-1.5 transition-colors border-2 border-transparent hover:border-black">Peer Reviews</a>
+                    @if(auth()->check() && auth()->user()->is_admin)
+                        <a href="{{ route('admin.dashboard') }}" class="font-mono text-xs uppercase font-bold hover:bg-black hover:text-white px-3 py-1.5 transition-colors border-2 border-black bg-yellow-300 ml-2">Admin</a>
+                    @endif
                 </div>
                 <div class="flex items-center space-x-4 border-l-2 border-black pl-8">
                     @auth

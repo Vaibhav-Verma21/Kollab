@@ -11,6 +11,7 @@ class WhiteboardUser extends Model
 
     protected $fillable = [
         'user_id',
+        'whiteboard_id',
         'name',
         'x',
         'y',

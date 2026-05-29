@@ -911,7 +911,7 @@
                 clearCanvasLocally();
                 
                 // Send clear instruction to server
-                fetch("{{ route('workspace.clear') }}", {
+                fetch("{{ route('workspace.clear', ['uuid' => $whiteboard->uuid]) }}", {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -929,9 +929,11 @@
         // --- Real-Time Sync Loop ---
         async function syncState() {
             // Construct sync payload
+            if (pendingActions.length === 0 && !pendingChatMessage) {
+                return; // Nothing to sync
+            }
+
             const payload = {
-                last_sync: lastSyncTime,
-                cursor: currentRelativeCursor,
                 actions: pendingActions,
                 chat_message: pendingChatMessage
             };
@@ -941,7 +943,7 @@
             pendingChatMessage = null;
 
             try {
-                const response = await fetch("{{ route('workspace.sync') }}", {
+                const response = await fetch("{{ route('workspace.sync', ['uuid' => $whiteboard->uuid]) }}", {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -951,24 +953,6 @@
                 });
 
                 if (!response.ok) throw new Error('Sync request failed');
-                const data = await response.json();
-
-                // Update sync time
-                lastSyncTime = data.server_time;
-
-                // 1. Draw external actions received
-                if (data.actions && data.actions.length > 0) {
-                    drawActions(data.actions);
-                }
-
-                // 2. Append new chat messages
-                if (data.chat_messages && data.chat_messages.length > 0) {
-                    appendChatMessages(data.chat_messages, true);
-                }
-
-                // 3. Update remote cursors targets & active avatars
-                updateActiveCollaborators(data.online_users);
-
             } catch (err) {
                 console.error('Sync Error:', err);
             }
@@ -1160,8 +1144,76 @@
             }
         });
 
-        // Start syncing polling loop
-        setInterval(syncState, 500);
+        // Send actions to server every 200ms if there are any
+        setInterval(syncState, 200);
+
+        // --- Laravel Echo Integration ---
+        let echoChannel = null;
+        // Keep a list of all currently joined users to pass to updateActiveCollaborators
+        let currentOnlineUsers = [];
+
+        if (window.Echo) {
+            echoChannel = window.Echo.join(`whiteboard.{{ $whiteboard->uuid }}`);
+            
+            echoChannel.here((users) => {
+                currentOnlineUsers = users.filter(u => u.id != currentUser.id).map(u => ({
+                    user_id: u.id,
+                    name: u.name,
+                    color: u.color
+                }));
+                updateActiveCollaborators(currentOnlineUsers);
+            })
+            .joining((user) => {
+                if (user.id != currentUser.id) {
+                    currentOnlineUsers.push({
+                        user_id: user.id,
+                        name: user.name,
+                        color: user.color
+                    });
+                    updateActiveCollaborators(currentOnlineUsers);
+                }
+            })
+            .leaving((user) => {
+                currentOnlineUsers = currentOnlineUsers.filter(u => u.user_id != user.id);
+                updateActiveCollaborators(currentOnlineUsers);
+            })
+            .listen('WhiteboardActionDispatched', (e) => {
+                if (e.actions) {
+                    drawActions(e.actions);
+                }
+            })
+            .listen('WhiteboardChatDispatched', (e) => {
+                if (e.message) {
+                    appendChatMessages([e.message], true);
+                }
+            })
+            .listen('WhiteboardCleared', (e) => {
+                if (e.action) {
+                    drawActions([e.action]);
+                }
+            })
+            .listenForWhisper('cursor-move', (e) => {
+                // Update specific user's cursor
+                // Find user in currentOnlineUsers, add x and y
+                const userIndex = currentOnlineUsers.findIndex(u => u.user_id == e.user_id);
+                if (userIndex !== -1) {
+                    currentOnlineUsers[userIndex].x = e.x;
+                    currentOnlineUsers[userIndex].y = e.y;
+                    updateActiveCollaborators(currentOnlineUsers);
+                }
+            });
+            
+            // Broadcast our cursor movement every 100ms
+            setInterval(() => {
+                echoChannel.whisper('cursor-move', {
+                    user_id: currentUser.id,
+                    name: currentUser.name,
+                    color: currentUser.color,
+                    x: currentRelativeCursor.x,
+                    y: currentRelativeCursor.y
+                });
+            }, 100);
+        }
 
         // --- Share Board Modal Logic ---
         const modalShare = document.getElementById('modal-share');

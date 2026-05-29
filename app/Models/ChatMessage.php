@@ -11,6 +11,7 @@ class ChatMessage extends Model
 
     protected $fillable = [
         'user_id',
+        'whiteboard_id',
         'username',
         'message',
         'color',

@@ -16,7 +16,9 @@
             </p>
             <div class="flex space-x-4">
                 <a href="{{ route('catalog') }}" class="brutal-border px-8 py-3 bg-blue-600 text-white font-bold uppercase tracking-wider brutal-shadow hover-lift">Explore Courses</a>
+                @guest
                 <a href="{{ route('register') }}" class="brutal-border px-8 py-3 bg-white font-bold uppercase tracking-wider brutal-shadow hover-lift">Sign Up</a>
+                @endguest
             </div>
         </div>
         <div class="bg-yellow-300 relative p-8 flex items-center justify-center min-h-[400px]">

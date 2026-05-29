@@ -30,16 +30,35 @@
                 <h2 class="text-xl font-bold uppercase mb-2">Lesson Description</h2>
                 <p class="font-mono text-sm mb-4">{{ $course->description }}</p>
                 
-                <div class="flex space-x-2">
+                <div class="flex space-x-2 mb-4">
                     <span class="bg-black text-white font-mono text-[10px] uppercase px-2 py-1">{{ $course->level }}</span>
                     <span class="bg-gray-200 text-black font-mono text-[10px] uppercase px-2 py-1 border border-black">{{ $course->duration }}</span>
                 </div>
+
+                @if(isset($assignments) && $assignments->count() > 0)
+                    <div class="mt-4 border-t-2 border-dashed border-gray-300 pt-4 w-full">
+                        <h3 class="font-bold uppercase text-sm mb-2">Assignments</h3>
+                        <div class="flex flex-col space-y-2">
+                            @foreach($assignments as $assignment)
+                                <a href="{{ route('course.assignment', ['slug' => $course->slug, 'id' => $assignment->id]) }}" class="block brutal-border bg-gray-50 hover:bg-yellow-100 p-2 font-mono text-xs hover-lift transition-transform">
+                                    <span class="font-bold">{{ $assignment->title }}</span>
+                                    <span class="block text-[10px] text-gray-500 mt-1">Due: {{ \Carbon\Carbon::parse($assignment->due_date)->format('M d, Y') }}</span>
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             </div>
             
             @auth
                 @if(in_array($course->id, auth()->user()->enrolled_courses ?? []))
-                    <div class="brutal-border bg-green-400 px-4 py-2 font-mono text-sm font-bold uppercase text-black brutal-shadow-sm pointer-events-none">
-                        Enrolled
+                    <div class="flex flex-col space-y-2">
+                        <div class="brutal-border bg-green-400 px-4 py-2 font-mono text-sm font-bold uppercase text-black brutal-shadow-sm pointer-events-none text-center">
+                            Enrolled
+                        </div>
+                        <a href="{{ route('course.quiz', $course->slug) }}" class="brutal-border bg-blue-400 hover:bg-blue-500 px-4 py-2 font-mono text-sm font-bold uppercase text-black brutal-shadow-sm hover-lift transition-transform text-center block w-full">
+                            Take Quiz
+                        </a>
                     </div>
                 @else
                     <form action="{{ route('enroll.store', $course->id) }}" method="POST">

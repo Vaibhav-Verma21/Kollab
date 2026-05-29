@@ -12,6 +12,7 @@ class WhiteboardAction extends Model
     protected $fillable = [
         '_id',
         'id',
+        'whiteboard_id',
         'user_id',
         'username',
         'color',

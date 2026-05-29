@@ -4,19 +4,16 @@ namespace App\Models;
 
 use MongoDB\Laravel\Eloquent\Model;
 
-class Course extends Model
+class Assignment extends Model
 {
     protected $connection = 'mongodb';
-    protected $collection = 'courses';
+    protected $collection = 'assignments';
 
     protected $fillable = [
+        'course_id',
         'title',
-        'slug',
-        'domain',
-        'duration',
-        'level',
         'description',
-        'theme_color',
-        'video_url',
+        'due_date',
+        'rubric', // Array of criteria and weights
     ];
 }
